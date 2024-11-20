@@ -96,9 +96,21 @@
     <p>&copy; 2023 SaumonDeLuxe. Tous droits réservés.</p>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.19.1/minified.js"></script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']],
+            displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        },
+        options: {
+            renderActions: {
+                addMenu: []
+            }
+        }
+    };
+</script>
 <script>
     // Fonction pour envoyer un message à l'API Flask
     async function sendMessage() {
