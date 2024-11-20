@@ -62,7 +62,7 @@
 </head>
 <body>
 <header>
-    <h1>Ollama Chat</h1>
+    <h1>Super AI Maths Solver</h1>
 </header>
 <div class="container">
     <h2>Interagir avec Ollama</h2>
@@ -96,22 +96,25 @@
     <p>&copy; 2023 SaumonDeLuxe. Tous droits réservés.</p>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <script>
     // Fonction pour envoyer un message à l'API Flask
     async function sendMessage() {
         const prompt = document.getElementById('promptInput').value;
         const selectedModel = document.getElementById('modelSelect').value;
         const selectedLanguage = document.getElementById('languageSelect').value;
-
+    
         if (!prompt) {
             alert('Quelle est votre requête?');
             return;
         }
-
+    
         // Envoi du message à l'API
         const responseContainer = document.getElementById('responseContainer');
         responseContainer.innerHTML = 'Chargement...';
-
+    
         try {
             const res = await fetch('/ollama', {
                 method: 'POST',
@@ -120,7 +123,7 @@
                 },
                 body: JSON.stringify({ prompt: prompt, target_language: selectedLanguage })
             });
-
+    
             const data = await res.json();
             if (data.response) {
                 if (selectedLanguage !== 'none') {
@@ -136,6 +139,9 @@
                 } else {
                     responseContainer.innerHTML = marked.parse(data.response);
                 }
+    
+                // Exécution de MathJax après modification du contenu
+                MathJax.typesetPromise();
             } else {
                 responseContainer.innerHTML = 'Erreur: ' + (data.error || data.message);
             }
@@ -143,6 +149,7 @@
             responseContainer.innerHTML = 'Erreur: ' + error.message;
         }
     }
+    
 
     // Fonction pour changer de modèle
     async function changeModel() {
