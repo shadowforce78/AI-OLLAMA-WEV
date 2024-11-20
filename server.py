@@ -55,7 +55,7 @@ def change_model():
 @app.route("/ollama", methods=["POST"])
 def ollama_model():
     rules = {
-        "TU NE VIE QUE POUR RESOUDRE DES PROBLEMES DE MATHS",
+        "TU NE VIS QUE POUR RESOUDRE DES PROBLEMES DE MATHS",
         "REPOND EN FRANCAIS ET SEULEMENT EN FRANCAIS",
         "N'UTILISE PAS DE NOMBRES A VIRGULE",
         "UTILISE MARKDOWN POUR ECRIRE TES REPONSES",
