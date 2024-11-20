@@ -59,6 +59,15 @@
         {% endfor %}
     </select>
     
+    <select id="languageSelect">
+        <option value="none">Pas de traduction</option>
+        <option value="en">Anglais</option>
+        <option value="fr">Français</option>
+        <option value="es">Espagnol</option>
+        <option value="de">Allemand</option>
+        <!-- Ajoute d'autres langues si nécessaire -->
+    </select>
+    
     <textarea id="promptInput" rows="4" placeholder="Entrez votre message..."></textarea>
     
     <button onclick="sendMessage()">Envoyer</button>
@@ -71,9 +80,10 @@
     async function sendMessage() {
         const prompt = document.getElementById('promptInput').value;
         const selectedModel = document.getElementById('modelSelect').value;
+        const selectedLanguage = document.getElementById('languageSelect').value;
 
         if (!prompt) {
-            alert('Tu dois entrer un prompt !');
+            alert('Quelle est votre requête?');
             return;
         }
 
@@ -91,7 +101,19 @@
 
         const data = await res.json();
         if (data.response) {
-            responseContainer.innerHTML = data.response;
+            if (selectedLanguage !== 'none') {
+                const translationRes = await fetch('/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: data.response, target_language: selectedLanguage })
+                });
+                const translationData = await translationRes.json();
+                responseContainer.innerHTML = translationData.translated_text;
+            } else {
+                responseContainer.innerHTML = data.response;
+            }
         } else {
             responseContainer.innerHTML = 'Erreur: ' + (data.error || data.message);
         }

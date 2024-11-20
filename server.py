@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import subprocess
 import os
+from googletrans import Translator
 
 app = Flask(__name__)
 
@@ -13,7 +14,6 @@ def get_models():
         return models
     except Exception as e:
         return []
-
 models = get_models()
 
 # Stocker le modèle actuellement sélectionné
