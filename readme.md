@@ -1,53 +1,59 @@
 # Super AI Maths Solver
 
-Super AI Maths Solver is a web application that allows users to interact with an AI model to solve math problems. The application supports multiple languages and provides clear, step-by-step solutions using European mathematical symbols.
+Super AI Maths Solver est une application web qui permet aux utilisateurs d'interagir avec un modèle d'IA pour résoudre des problèmes de mathématiques. L'application prend en charge plusieurs langues et fournit des solutions claires et étape par étape en utilisant des symboles mathématiques européens.
 
-## Features
+## Fonctionnalités
 
-- Interact with AI to solve math problems
-- Supports multiple languages for responses
-- Dynamic model selection
-- Clear and concise step-by-step solutions
-- Uses Markdown for formatting responses
-- Supports MathJax for rendering mathematical symbols
+- Interagir avec l'IA pour résoudre des problèmes de mathématiques
+- Prend en charge plusieurs langues pour les réponses
+- Sélection dynamique de modèles
+- Solutions claires et concises étape par étape
+- Utilise Markdown pour formater les réponses
+- Prend en charge MathJax pour le rendu des symboles mathématiques
 
-## Prerequisites
+## Prérequis
 
 - Python 3.x
 - Flask
 - Googletrans
-- Ollama (for managing AI models)
+- Ollama (pour gérer les modèles d'IA)
 
 ## Installation
 
-1. Clone the repository:
+1. Clonez le dépôt :
 
-    ```sh
-    git clone https://github.com/shadowforce78/AI-OLLAMA-WEV.git
-    cd AI-OLLAMA-WEV
-    ```
+   ```sh
+   git clone https://github.com/shadowforce78/AI-OLLAMA-WEV.git
+   cd AI-OLLAMA-WEV
+   ```
 
 2. Install the required Python packages:
 
-    ```sh
-    pip install -r requirements.txt
-    ```
+   ```sh
+   pip install -r requirements.txt
+   ```
 
 3. Install Ollama:
 
-    Follow the instructions on the [Ollama website](https://ollama.com) to install Ollama on your system.
+   Follow the instructions on the [Ollama website](https://ollama.com) to install Ollama on your system.
 
 ## Usage
 
 1. Start the Flask server:
 
-    ```sh
-    python server.py
-    ```
+   ```sh
+   python server.py
+   ```
 
 2. Open your web browser and navigate to `http://127.0.0.1:5000`.
 
 3. Interact with the AI by selecting a model, choosing a language, and entering your math problem.
+
+4. Pull the required model for better usage:
+
+   ```sh
+   ollama pull mathstral
+   ```
 
 ## Project Structure
 
