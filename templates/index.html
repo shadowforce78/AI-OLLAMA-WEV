@@ -14,19 +14,32 @@
             align-items: center;
             background-color: #f4f4f9;
         }
+        header, footer {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+        }
         .container {
             width: 80%;
             max-width: 800px;
-            margin-top: 20px;
+            margin: 20px auto;
             background-color: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
         select, textarea, button {
             width: 100%;
             padding: 10px;
-            margin-bottom: 15px;
             border-radius: 5px;
             border: 1px solid #ddd;
         }
@@ -48,33 +61,40 @@
     </style>
 </head>
 <body>
-
+<header>
+    <h1>Ollama Chat</h1>
+</header>
 <div class="container">
     <h2>Interagir avec Ollama</h2>
-    
-    <!-- Dropdown pour choisir le modèle -->
-    <select id="modelSelect">
-        {% for model in models %}
-            <option value="{{ model }}" {% if model == current_model %}selected{% endif %}>{{ model }}</option>
-        {% endfor %}
-    </select>
-    
-    <select id="languageSelect">
-        <option value="none">Pas de traduction</option>
-        <option value="en">Anglais</option>
-        <option value="fr">Français</option>
-        <option value="es">Espagnol</option>
-        <option value="de">Allemand</option>
-        <!-- Ajoute d'autres langues si nécessaire -->
-    </select>
-    
-    <textarea id="promptInput" rows="4" placeholder="Entrez votre message..."></textarea>
-    
+    <div class="form-group">
+        <label for="modelSelect">Choisir le modèle :</label>
+        <select id="modelSelect">
+            {% for model in models %}
+                <option value="{{ model }}" {% if model == current_model %}selected{% endif %}>{{ model }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="languageSelect">Choisir la langue :</label>
+        <select id="languageSelect">
+            <option value="none">Pas de traduction</option>
+            <option value="en">Anglais</option>
+            <option value="fr">Français</option>
+            <option value="es">Espagnol</option>
+            <option value="de">Allemand</option>
+            <!-- Ajoute d'autres langues si nécessaire -->
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="promptInput">Votre message :</label>
+        <textarea id="promptInput" rows="4" placeholder="Entrez votre message..."></textarea>
+    </div>
     <button onclick="sendMessage()">Envoyer</button>
-
     <div id="responseContainer" class="response"></div>
 </div>
-
+<footer>
+    <p>&copy; 2023 Ollama Chat. Tous droits réservés.</p>
+</footer>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
     // Fonction pour envoyer un message à l'API Flask
