@@ -96,7 +96,7 @@
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ prompt: prompt })
+            body: JSON.stringify({ prompt: prompt, target_language: selectedLanguage })
         });
 
         const data = await res.json();

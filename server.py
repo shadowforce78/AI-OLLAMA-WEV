@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import subprocess
 import os
-from googletrans import Translator
+from googletrans import Translator, LANGUAGES
 
 app = Flask(__name__)
 
@@ -23,6 +23,15 @@ models = get_models()
 
 # Stocker le modèle actuellement sélectionné
 current_model = models[0]  # Le premier modèle par défaut
+
+# Initialize the translator with error handling
+try:
+    translator = Translator()
+    # Perform a test translation to ensure the translator is working
+    translator.translate("test", dest="en")
+except Exception as e:
+    translator = None
+    print(f"Error initializing translator: {e}")
 
 
 # Route principale qui rend la page HTML
@@ -47,6 +56,7 @@ def change_model():
 def ollama_model():
     data = request.json
     prompt = data.get("prompt")
+    target_language = data.get("target_language")
 
     if not prompt:
         return jsonify({"error": "Missing prompt"}), 400
@@ -58,29 +68,23 @@ def ollama_model():
             text=True,
             encoding="utf-8",
         )
+        if result.returncode != 0:
+            return jsonify({"error": result.stderr.strip()}), 500
         response = result.stdout.strip()
+
+        if target_language and target_language in LANGUAGES:
+            if not translator:
+                return jsonify({"error": "Translator service is unavailable"}), 500
+            try:
+                translated = translator.translate(response, dest=target_language)
+                response = translated.text
+            except Exception as e:
+                return jsonify({"error": f"Translation error: {str(e)}"}), 500
+
         return jsonify({"response": response}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-translator = Translator()
-
-
-@app.route("/translate", methods=["POST"])
-def translate_text():
-    data = request.json
-    text = data.get("text")
-    target_language = data.get("target_language")
-
-    if not text or not target_language:
-        return jsonify({"error": "Missing text or target language"}), 400
-
-    try:
-        translated = translator.translate(text, dest=target_language)
-        return jsonify({"translated_text": translated.text}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
