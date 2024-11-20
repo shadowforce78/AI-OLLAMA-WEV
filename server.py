@@ -59,7 +59,7 @@ def ollama_model():
     target_language = data.get("target_language")
 
     if not prompt:
-        return jsonify({"error": "Missing prompt"}), 400
+        return "Missing prompt", 400
 
     try:
         result = subprocess.run(
@@ -69,21 +69,21 @@ def ollama_model():
             encoding="utf-8",
         )
         if result.returncode != 0:
-            return jsonify({"error": result.stderr.strip()}), 500
+            return result.stderr.strip(), 500
         response = result.stdout.strip()
 
         if target_language and target_language in LANGUAGES:
             if not translator:
-                return jsonify({"error": "Translator service is unavailable"}), 500
+                return "Translator service is unavailable", 500
             try:
                 translated = translator.translate(response, dest=target_language)
                 response = translated.text
             except Exception as e:
-                return jsonify({"error": f"Translation error: {str(e)}"}), 500
+                return f"Translation error: {str(e)}", 500
 
-        return jsonify({"response": response}), 200
+        return response, 200  # Renvoie directement la chaîne
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return str(e), 500
 
 
 
