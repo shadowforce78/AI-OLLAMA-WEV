@@ -13,7 +13,7 @@ Super AI Maths Solver est une application web qui permet aux utilisateurs d'inte
 
 ## Prérequis
 
-- Python 3.x
+- Python > 3.6
 - Flask
 - Googletrans
 - Ollama (pour gérer les modèles d'IA)
