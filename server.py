@@ -58,6 +58,7 @@ def ollama_model():
         "YOU HAVE TO RESPOND IN FRENCH",
         "DO NOT USE DECIMAL NUMBERS",
         "USE MARKDOWN",
+        "RESPOND STEP BY STEP",
     }
     data = request.json
     prompt = data.get("prompt")
