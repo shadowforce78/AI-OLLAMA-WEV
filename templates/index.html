@@ -75,6 +75,7 @@
     <div id="responseContainer" class="response"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
     // Fonction pour envoyer un message à l'API Flask
     async function sendMessage() {
@@ -110,9 +111,9 @@
                     body: JSON.stringify({ text: data.response, target_language: selectedLanguage })
                 });
                 const translationData = await translationRes.json();
-                responseContainer.innerHTML = translationData.translated_text;
+                responseContainer.innerHTML = marked.parse(translationData.translated_text);
             } else {
-                responseContainer.innerHTML = data.response;
+                responseContainer.innerHTML = marked.parse(data.response);
             }
         } else {
             responseContainer.innerHTML = 'Erreur: ' + (data.error || data.message);
