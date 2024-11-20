@@ -63,7 +63,7 @@ def ollama_model():
     data = request.json
     prompt = data.get("prompt")
     # Ajout de règles supplémentaires au prompt de l'utilisateur
-    prompt = f"{prompt}\n\n{' '.join([f'\n**{rule}**' for rule in rules])}"
+    prompt = f"{prompt}\n\n" + ' '.join([f"\n**{rule}**" for rule in rules])
     target_language = data.get("target_language")
     # print(f"Prompt: {prompt}")
     if not prompt:
