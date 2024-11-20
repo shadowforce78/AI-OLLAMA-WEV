@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ollama Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f9;
+        }
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        select, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .response {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Interagir avec Ollama</h2>
+    
+    <!-- Dropdown pour choisir le modèle -->
+    <select id="modelSelect">
+        {% for model in models %}
+            <option value="{{ model }}" {% if model == current_model %}selected{% endif %}>{{ model }}</option>
+        {% endfor %}
+    </select>
+    
+    <textarea id="promptInput" rows="4" placeholder="Entrez votre message..."></textarea>
+    
+    <button onclick="sendMessage()">Envoyer</button>
+
+    <div id="responseContainer" class="response"></div>
+</div>
+
+<script>
+    // Fonction pour envoyer un message à l'API Flask
+    async function sendMessage() {
+        const prompt = document.getElementById('promptInput').value;
+        const selectedModel = document.getElementById('modelSelect').value;
+
+        if (!prompt) {
+            alert('Tu dois entrer un prompt !');
+            return;
+        }
+
+        // Envoi du message à l'API
+        const responseContainer = document.getElementById('responseContainer');
+        responseContainer.innerHTML = 'Chargement...';
+
+        const res = await fetch('/ollama', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ prompt: prompt })
+        });
+
+        const data = await res.json();
+        if (data.response) {
+            responseContainer.innerHTML = data.response;
+        } else {
+            responseContainer.innerHTML = 'Erreur: ' + (data.error || data.message);
+        }
+    }
+
+    // Fonction pour changer de modèle
+    async function changeModel() {
+        const newModel = document.getElementById('modelSelect').value;
+        
+        const res = await fetch('/change_model', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ model: newModel })
+        });
+
+        const data = await res.json();
+        if (data.status === 'success') {
+            alert('Modèle changé en : ' + data.model);
+        } else {
+            alert('Erreur : ' + data.message);
+        }
+    }
+
+    // Met à jour le modèle dès qu'un choix est fait dans le menu
+    document.getElementById('modelSelect').addEventListener('change', changeModel);
+</script>
+
+</body>
+</html>
