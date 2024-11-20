@@ -93,7 +93,7 @@
     <div id="responseContainer" class="response"></div>
 </div>
 <footer>
-    <p>&copy; 2023 Ollama Chat. Tous droits réservés.</p>
+    <p>&copy; 2023 SaumonDeLuxe. Tous droits réservés.</p>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
@@ -112,31 +112,35 @@
         const responseContainer = document.getElementById('responseContainer');
         responseContainer.innerHTML = 'Chargement...';
 
-        const res = await fetch('/ollama', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ prompt: prompt, target_language: selectedLanguage })
-        });
+        try {
+            const res = await fetch('/ollama', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: prompt, target_language: selectedLanguage })
+            });
 
-        const data = await res.json();
-        if (data.response) {
-            if (selectedLanguage !== 'none') {
-                const translationRes = await fetch('/translate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ text: data.response, target_language: selectedLanguage })
-                });
-                const translationData = await translationRes.json();
-                responseContainer.innerHTML = marked.parse(translationData.translated_text);
+            const data = await res.json();
+            if (data.response) {
+                if (selectedLanguage !== 'none') {
+                    const translationRes = await fetch('/translate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ text: data.response, target_language: selectedLanguage })
+                    });
+                    const translationData = await translationRes.json();
+                    responseContainer.innerHTML = marked.parse(translationData.translated_text);
+                } else {
+                    responseContainer.innerHTML = marked.parse(data.response);
+                }
             } else {
-                responseContainer.innerHTML = marked.parse(data.response);
+                responseContainer.innerHTML = 'Erreur: ' + (data.error || data.message);
             }
-        } else {
-            responseContainer.innerHTML = 'Erreur: ' + (data.error || data.message);
+        } catch (error) {
+            responseContainer.innerHTML = 'Erreur: ' + error.message;
         }
     }
 
@@ -144,19 +148,23 @@
     async function changeModel() {
         const newModel = document.getElementById('modelSelect').value;
         
-        const res = await fetch('/change_model', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ model: newModel })
-        });
+        try {
+            const res = await fetch('/change_model', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ model: newModel })
+            });
 
-        const data = await res.json();
-        if (data.status === 'success') {
-            alert('Modèle changé en : ' + data.model);
-        } else {
-            alert('Erreur : ' + data.message);
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert('Modèle changé en : ' + data.model);
+            } else {
+                alert('Erreur : ' + data.message);
+            }
+        } catch (error) {
+            alert('Erreur : ' + error.message);
         }
     }
 

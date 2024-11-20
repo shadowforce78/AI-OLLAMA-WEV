@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import subprocess
-import os
+import json
 from googletrans import Translator, LANGUAGES
 
 app = Flask(__name__)
@@ -71,6 +71,9 @@ def ollama_model():
         if result.returncode != 0:
             return result.stderr.strip(), 500
         response = result.stdout.strip()
+        response = response.replace("\n", "<br>")
+        # Transformation en JSON pour le traitement côté client
+        response = json.dumps({"response": response})
 
         if target_language and target_language in LANGUAGES:
             if not translator:
