@@ -54,10 +54,17 @@ def change_model():
 # Route pour interagir avec Ollama
 @app.route("/ollama", methods=["POST"])
 def ollama_model():
+    rules = {
+        "YOU HAVE TO RESPOND IN FRENCH",
+        "DO NOT USE DECIMAL NUMBERS",
+        "USE MARKDOWN",
+    }
     data = request.json
     prompt = data.get("prompt")
+    # Ajout de règles supplémentaires au prompt de l'utilisateur
+    prompt = f"{prompt}\n\n{' '.join([f'\n**{rule}**' for rule in rules])}"
     target_language = data.get("target_language")
-
+    print(f"Prompt: {prompt}")
     if not prompt:
         return "Missing prompt", 400
 
@@ -86,7 +93,6 @@ def ollama_model():
         return response, 200  # Renvoie directement la chaîne
     except Exception as e:
         return str(e), 500
-
 
 
 if __name__ == "__main__":
