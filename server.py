@@ -45,7 +45,7 @@ def ollama_model():
 
     try:
         result = subprocess.run(['ollama', 'run', current_model, prompt],
-                                capture_output=True, text=True)
+                                capture_output=True, text=True, encoding='utf-8')
         response = result.stdout.strip()
         return jsonify({"response": response}), 200
     except Exception as e:
