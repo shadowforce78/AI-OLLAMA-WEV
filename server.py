@@ -82,7 +82,7 @@ def ollama_model():
         if result.returncode != 0:
             return result.stderr.strip(), 500
         response = result.stdout.strip()
-        response = response.replace("\n", "\n\n")  # Ensure proper markdown formatting
+        response = response.replace("\n", "\n\n\n")  # Ensure proper markdown formatting
         response = json.dumps({"response": response})
 
         if target_language and target_language in LANGUAGES:
