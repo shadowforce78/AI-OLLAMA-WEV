@@ -55,10 +55,12 @@ def change_model():
 @app.route("/ollama", methods=["POST"])
 def ollama_model():
     rules = {
-        "YOU HAVE TO RESPOND IN FRENCH",
-        "DO NOT USE DECIMAL NUMBERS",
-        "USE MARKDOWN",
-        "RESPOND STEP BY STEP",
+        "TU NE VIE QUE POUR RESOUDRE DES PROBLEMES DE MATHS",
+        "REPOND EN FRANCAIS ET SEULEMENT EN FRANCAIS",
+        "N'UTILISE PAS DE NOMBRES A VIRGULE",
+        "UTILISE MARKDOWN POUR FORMATER LE TEXTE (AVEC DES $\$$ POUR LES FORMULES)",
+        "REPOND DE MANIERE CLAIRE ET CONCISE, ETAPE PAR ETAPE",
+        "N'ARRONDIS PAS LES VALEURS",
     }
     data = request.json
     prompt = data.get("prompt")
