@@ -1,77 +1,70 @@
-import torch
-from transformers import VisionEncoderDecoderModel, AutoProcessor, Seq2SeqTrainer, Seq2SeqTrainingArguments
 from datasets import load_dataset
+from transformers import VisionEncoderDecoderModel, AutoProcessor, Seq2SeqTrainingArguments, Seq2SeqTrainer
+from transformers import default_data_collator
 from PIL import Image
-from torchvision.transforms import Compose, Resize, ToTensor, Normalize
+import torch
+import os
 
 # Charger le dataset
 dataset = load_dataset("OleehyO/latex-formulas", "cleaned_formulas")
 
-# Charger un modèle pré-entraîné Vision-Encoder-Decoder
-model_name = "google/vit-base-patch16-224-in21k"  # Exemple, peut être remplacé par un autre
-processor = AutoProcessor.from_pretrained(model_name)
-model = VisionEncoderDecoderModel.from_encoder_decoder_pretrained(
-    "google/vit-base-patch16-224-in21k",  # Modèle de l'encodeur visuel
-    "gpt2"                               # Modèle du décodeur textuel
-)
+# Charger le modèle et le processeur
+model = VisionEncoderDecoderModel.from_pretrained("DGurgurov/im2latex")
+processor = AutoProcessor.from_pretrained("DGurgurov/im2latex")
 
-# Modifier la taille maximale des séquences pour le décodeur
-model.config.decoder_start_token_id = processor.tokenizer.cls_token_id
+# Configurer le modèle
+model.config.decoder_start_token_id = processor.tokenizer.bos_token_id  # Utilise le token de début de séquence
 model.config.pad_token_id = processor.tokenizer.pad_token_id
-model.config.max_length = 512
 model.config.eos_token_id = processor.tokenizer.eos_token_id
+model.config.max_length = 512
 
-# Prétraitement des images
-image_transform = Compose([
-    Resize((224, 224)),
-    ToTensor(),
-    Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-])
+# Prétraitement des données
+def preprocess_function(batch):
+    # Charger et traiter l'image
+    images = [Image.open(img_path).convert("RGB") for img_path in batch["image"]]
+    pixel_values = processor(images=images, return_tensors="pt").pixel_values
 
-# Fonction de transformation pour le dataset
-def preprocess_data(batch):
-    # Charger et transformer les images
-    image = Image.open(batch["image_path"]).convert("RGB")
-    batch["pixel_values"] = image_transform(image)
     # Tokenizer les formules LaTeX
-    batch["labels"] = processor.tokenizer(
-        batch["formula"],
-        max_length=512,
-        padding="max_length",
-        truncation=True,
-        return_tensors="pt"
-    ).input_ids.squeeze()  # Retirer la dimension batch
-    return batch
+    labels = processor.tokenizer(batch["formula"], padding="max_length", truncation=True, max_length=512).input_ids
+    labels = torch.tensor(labels)
+    
+    # Remplacer les tokens de padding par -100 pour éviter qu'ils contribuent à la loss
+    labels[labels == processor.tokenizer.pad_token_id] = -100
+    
+    return {"pixel_values": pixel_values, "labels": labels}
 
-# Appliquer la transformation
-processed_dataset = dataset.map(preprocess_data, remove_columns=["image_path", "formula"])
+# Appliquer le prétraitement
+processed_dataset = dataset.map(preprocess_function, batched=True)
 
-# Configuration pour l'entraînement
+# Arguments pour l’entraînement
 training_args = Seq2SeqTrainingArguments(
-    output_dir="./img2latex",
-    evaluation_strategy="epoch",
-    save_strategy="epoch",
-    per_device_train_batch_size=8,
-    per_device_eval_batch_size=8,
+    output_dir="./results",
+    per_device_train_batch_size=4,
+    per_device_eval_batch_size=4,
     predict_with_generate=True,
+    num_train_epochs=3,
+    save_strategy="epoch",
+    evaluation_strategy="epoch",
     logging_dir="./logs",
+    logging_strategy="steps",
+    logging_steps=500,
     learning_rate=5e-5,
-    num_train_epochs=10,
-    save_total_limit=2
+    report_to="tensorboard",
+    save_total_limit=2,
 )
 
-# Création du trainer
+# Création du Trainer
 trainer = Seq2SeqTrainer(
     model=model,
     args=training_args,
     train_dataset=processed_dataset["train"],
     eval_dataset=processed_dataset["validation"],
-    tokenizer=processor.feature_extractor,
+    data_collator=default_data_collator,
+    tokenizer=processor.tokenizer,
 )
 
-# Lancer l'entraînement
+# Entraîner le modèle
 trainer.train()
 
-# Sauvegarder le modèle final
-model.save_pretrained("./img2latex_model")
-processor.save_pretrained("./img2latex_processor")
+# Sauvegarder le modèle
+trainer.save_model("./trained_model")
