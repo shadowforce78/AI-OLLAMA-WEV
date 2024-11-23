@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import subprocess
 import json
-from googletrans import Translator, LANGUAGES
 
 app = Flask(__name__)
 
@@ -23,16 +22,6 @@ models = get_models()
 
 # Stocker le modèle actuellement sélectionné
 current_model = models[0]  # Le premier modèle par défaut
-
-# Initialize the translator with error handling
-try:
-    translator = Translator()
-    # Perform a test translation to ensure the translator is working
-    translator.translate("test", dest="en")
-except Exception as e:
-    translator = None
-    print(f"Error initializing translator: {e}")
-
 
 # Route principale qui rend la page HTML
 @app.route("/")
@@ -67,7 +56,6 @@ def ollama_model():
     prompt = data.get("prompt")
     # Ajout de règles supplémentaires au prompt de l'utilisateur
     prompt = f"{prompt}\n\n" + ' '.join([f"\n**{rule}**" for rule in rules])
-    target_language = data.get("target_language")
     # print(f"Prompt: {prompt}")
     if not prompt:
         return "Missing prompt", 400
@@ -85,14 +73,6 @@ def ollama_model():
         response = response.replace("\n", "\n\n")  # Ensure proper markdown formatting
         response = json.dumps({"response": response})
 
-        if target_language and target_language in LANGUAGES:
-            if not translator:
-                return "Translator service is unavailable", 500
-            try:
-                translated = translator.translate(response, dest=target_language)
-                response = translated.text
-            except Exception as e:
-                return f"Translation error: {str(e)}", 500
 
         return response, 200  # Renvoie directement la chaîne
     except Exception as e:
