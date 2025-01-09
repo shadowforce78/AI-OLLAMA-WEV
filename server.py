@@ -40,6 +40,28 @@ def change_model():
     return jsonify({"status": "error", "message": "Model not found"}), 400
 
 
+# Ajoutons une fonction pour nettoyer le texte mathématique
+def clean_math_expression(text):
+    # Nettoie les expressions mathématiques pour LaTeX
+    replacements = {
+        '(': '',  # Retire les parenthèses superflues
+        ')': '',
+        '[': '',  # Retire les crochets superflus
+        ']': '',
+    }
+    
+    def process_math_block(match):
+        content = match.group(1)
+        for old, new in replacements.items():
+            content = content.replace(old, new)
+        return f'$${content}$$'
+
+    # Trouve et nettoie les blocs mathématiques
+    import re
+    text = re.sub(r'\[(.*?)\]', process_math_block, text)
+    return text
+
+
 # Route pour interagir avec Ollama
 @app.route("/ollama", methods=["POST"])
 def ollama_model():
@@ -71,10 +93,9 @@ def ollama_model():
         if result.returncode != 0:
             return result.stderr.strip(), 500
         response = result.stdout.strip()
-        response = response.replace("\n", "\n\n")  # Ensure proper markdown formatting
+        response = response.replace("\n", "\n\n")
+        response = clean_math_expression(response)
         response = json.dumps({"response": response})
-
-
         return response, 200  # Renvoie directement la chaîne
     except Exception as e:
         return str(e), 500

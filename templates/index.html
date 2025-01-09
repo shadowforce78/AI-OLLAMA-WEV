@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maths AI Solver</title>
+    <!-- Add KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -54,9 +56,14 @@
         }
         .response {
             background-color: #e9ecef;
-            padding: 10px;
+            padding: 20px;
             border-radius: 5px;
             margin-top: 10px;
+            line-height: 1.6;
+        }
+        .math-display {
+            overflow-x: auto;
+            padding: 10px 0;
         }
     </style>
 </head>
@@ -95,24 +102,19 @@
 <footer>
     <p>&copy; 2024 SaumonDeLuxe. Tous droits réservés.</p>
 </footer>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.19.1/minified.js"></script>
-<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <script>
-    window.MathJax = {
-        tex: {
-            inlineMath: [['$', '$'], ['\\(', '\\)']],
-            displayMath: [['$$', '$$'], ['\\[', '\\]']]
-        },
-        options: {
-            renderActions: {
-                addMenu: []
-            }
-        }
-    };
-</script>
-<script>
-    // Fonction pour envoyer un message à l'API Flask
+    // Configure marked to handle LaTeX
+    const renderer = new marked.Renderer();
+    
+    marked.setOptions({
+        renderer: renderer,
+        breaks: true
+    });
+
     async function sendMessage() {
         const prompt = document.getElementById('promptInput').value;
         const selectedModel = document.getElementById('modelSelect').value;
@@ -138,22 +140,30 @@
     
             const data = await res.json();
             if (data.response) {
-                if (selectedLanguage !== 'none') {
-                    const translationRes = await fetch('/translate', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ text: data.response, target_language: selectedLanguage })
+                try {
+                    // Prétraitement du texte pour protéger les expressions LaTeX
+                    let processedText = data.response.replace(/\$\$([\s\S]*?)\$\$/g, (match, content) => {
+                        return `<div class="math-block">${content}</div>`;
                     });
-                    const translationData = await translationRes.json();
-                    responseContainer.innerHTML = marked.parse(translationData.translated_text);
-                } else {
-                    responseContainer.innerHTML = marked.parse(data.response);
+                    
+                    // Rendu markdown
+                    responseContainer.innerHTML = marked.parse(processedText);
+                    
+                    // Rendu LaTeX pour chaque bloc math
+                    document.querySelectorAll('.math-block').forEach(element => {
+                        try {
+                            katex.render(element.textContent.trim(), element, {
+                                displayMode: true,
+                                throwOnError: false
+                            });
+                        } catch (e) {
+                            console.error('KaTeX error:', e);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Rendering error:', error);
+                    responseContainer.innerHTML = 'Erreur de rendu: ' + error.message;
                 }
-    
-                // Exécution de MathJax après modification du contenu
-                MathJax.typesetPromise();
             } else {
                 responseContainer.innerHTML = 'Erreur: ' + (data.error || data.message);
             }
